@@ -1,57 +1,82 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
   <meta charset="utf-8">
   <title>Gráfico de Focos no Cerrado - DF</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    canvas { margin-top: 20px; }
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f4f4f4; }
+    canvas { margin-top: 20px; background: #fff; border: 1px solid #ccc; }
+    select {
+      padding: 5px;
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 <body>
   <h2>Focos de Queimadas no Cerrado - Cidades Satélites do DF (2024)</h2>
+
+  <label for="estadoFiltro">Filtrar por Estado:</label>
+  <select id="estadoFiltro">
+    <option value="DF">DF</option>
+    <!-- Você pode adicionar outros estados se existirem no JSON -->
+  </select>
+
   <canvas id="graficoFocos" width="1000" height="500"></canvas>
 
   <script>
+    let chartInstance;
+
     async function carregarDados() {
       const resposta = await fetch('focos.json');
       const dados = await resposta.json();
+      return dados.features;
+    }
 
-      const contagemPorData = {};
-      const riscoPorData = {};
+    function processarDadosPorCidade(features, estadoSelecionado) {
+      const contagemPorCidade = {};
+      const riscoPorCidade = {};
 
-      dados.features.forEach(f => {
-        const props = f.properties;
-        const dataHora = props.DataHora;
-        if (dataHora) {
-          const data = dataHora.split(' ')[0];
-          contagemPorData[data] = (contagemPorData[data] || 0) + 1;
+      features.forEach(f => {
+        const { estado, cidade, temperatura, umidade, riscoFogo } = f.properties;
 
-          // Cálculo de risco de fogo simples baseado na umidade e temperatura
-          const risco = props.umidade < 30 && props.temperatura > 30 ? 'Alto' : 'Moderado';
-          riscoPorData[data] = risco;
+        if (estado !== estadoSelecionado) return;
+
+        contagemPorCidade[cidade] = (contagemPorCidade[cidade] || 0) + 1;
+
+        // Armazena o pior risco encontrado para a cidade
+        const riscoAtual = riscoFogo || (umidade < 30 && temperatura > 30 ? 'Alto' : 'Moderado');
+
+        // Define prioridade de risco
+        const niveisRisco = ['Moderado', 'Alto', 'Muito Alto', 'Crítico', 'Extremo'];
+
+        if (!riscoPorCidade[cidade] || niveisRisco.indexOf(riscoAtual) > niveisRisco.indexOf(riscoPorCidade[cidade])) {
+          riscoPorCidade[cidade] = riscoAtual;
         }
       });
 
-      const labels = Object.keys(contagemPorData).sort();
-      const valores = labels.map(data => contagemPorData[data]);
-      const riscos = labels.map(data => riscoPorData[data]);
+      return { contagemPorCidade, riscoPorCidade };
+    }
 
+    function atualizarGrafico(labels, dados, riscos) {
       const ctx = document.getElementById('graficoFocos').getContext('2d');
-      new Chart(ctx, {
+
+      if (chartInstance) {
+        chartInstance.destroy();
+      }
+
+      chartInstance = new Chart(ctx, {
         type: 'bar',
         data: {
           labels: labels,
-          datasets: [
-            {
-              label: 'Nº de Focos',
-              data: valores,
-              backgroundColor: 'rgba(255, 99, 132, 0.6)',
-              borderColor: 'rgba(255, 99, 132, 1)',
-              borderWidth: 1
-            }
-          ]
+          datasets: [{
+            label: 'Nº de Focos por Cidade',
+            data: dados,
+            backgroundColor: 'rgba(255, 99, 132, 0.6)',
+            borderColor: 'rgba(255, 99, 132, 1)',
+            borderWidth: 1
+          }]
         },
         options: {
           responsive: true,
@@ -60,13 +85,13 @@
               callbacks: {
                 afterLabel: function(context) {
                   const index = context.dataIndex;
-                  return 'Risco: ' + riscos[index];
+                  return 'Risco de Fogo: ' + riscos[index];
                 }
               }
             },
             title: {
               display: true,
-              text: 'Monitoramento de Focos de Incêndio - Bioma Cerrado (DF)'
+              text: 'Monitoramento de Focos por Cidade - Bioma Cerrado (DF)'
             }
           },
           scales: {
@@ -80,7 +105,7 @@
             x: {
               title: {
                 display: true,
-                text: 'Data (2024)'
+                text: 'Cidade'
               }
             }
           }
@@ -88,7 +113,31 @@
       });
     }
 
-    carregarDados();
+    async function iniciar() {
+      const features = await carregarDados();
+
+      const estadoFiltro = document.getElementById('estadoFiltro');
+      const estadoSelecionado = estadoFiltro.value;
+
+      const { contagemPorCidade, riscoPorCidade } = processarDadosPorCidade(features, estadoSelecionado);
+
+      const labels = Object.keys(contagemPorCidade).sort();
+      const valores = labels.map(cidade => contagemPorCidade[cidade]);
+      const riscos = labels.map(cidade => riscoPorCidade[cidade]);
+
+      atualizarGrafico(labels, valores, riscos);
+
+      estadoFiltro.addEventListener('change', () => {
+        const novoEstado = estadoFiltro.value;
+        const { contagemPorCidade, riscoPorCidade } = processarDadosPorCidade(features, novoEstado);
+        const labels = Object.keys(contagemPorCidade).sort();
+        const valores = labels.map(cidade => contagemPorCidade[cidade]);
+        const riscos = labels.map(cidade => riscoPorCidade[cidade]);
+        atualizarGrafico(labels, valores, riscos);
+      });
+    }
+
+    iniciar();
   </script>
 </body>
 </html>
