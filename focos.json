@@ -1,13 +1,23 @@
 {
   "type": "FeatureCollection",
   "features": [
-    { "properties": { "estado": "SP" } },
-    { "properties": { "estado": "SP" } },
-    { "properties": { "estado": "MG" } },
-    { "properties": { "estado": "RJ" } },
-    { "properties": { "estado": "RJ" } },
-    { "properties": { "estado": "RJ" } },
-    { "properties": { "estado": "BA" } },
-    { "properties": { "estado": "DF" } }
+    {
+      "properties": {
+        "estado": "DF",
+        "DataHora": "2024-07-30 12:00:00",
+        "diasSemChuva": 10,
+        "temperatura": 32,
+        "umidade": 25
+      }
+    },
+    {
+      "properties": {
+        "estado": "DF",
+        "DataHora": "2024-07-31 10:00:00",
+        "diasSemChuva": 11,
+        "temperatura": 33,
+        "umidade": 20
+      }
+    }
   ]
 }

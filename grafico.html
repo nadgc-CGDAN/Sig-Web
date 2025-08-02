@@ -2,38 +2,40 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Gráfico de Focos</title>
+  <title>Gráfico de Focos por Data</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-  <h2>Focos por Estado</h2>
-  <canvas id="graficoFocos" width="800" height="400"></canvas>
+  <h2>Focos por Data</h2>
+  <canvas id="graficoFocos" width="1000" height="500"></canvas>
 
   <script>
     async function carregarDados() {
       const resposta = await fetch('focos.json');
       const dados = await resposta.json();
 
-      // Agrupar por estado
-      const contagemEstados = {};
+      const contagemPorData = {};
+
       dados.features.forEach(f => {
-        const estado = f.properties.estado || 'Indefinido';
-        contagemEstados[estado] = (contagemEstados[estado] || 0) + 1;
+        const dataHora = f.properties.DataHora;
+        if (dataHora) {
+          const data = dataHora.split(' ')[0]; // Pega apenas a data (YYYY/MM/DD)
+          contagemPorData[data] = (contagemPorData[data] || 0) + 1;
+        }
       });
 
-      const labels = Object.keys(contagemEstados);
-      const valores = Object.values(contagemEstados);
+      const labels = Object.keys(contagemPorData).sort();
+      const valores = labels.map(data => contagemPorData[data]);
 
-      // Criar o gráfico
       const ctx = document.getElementById('graficoFocos').getContext('2d');
       new Chart(ctx, {
         type: 'bar',
         data: {
           labels: labels,
           datasets: [{
-            label: 'Número de Focos por Estado',
+            label: 'Focos por Data',
             data: valores,
-            backgroundColor: 'rgba(255, 99, 132, 0.5)',
+            backgroundColor: 'rgba(255, 99, 132, 0.6)',
             borderColor: 'rgba(255, 99, 132, 1)',
             borderWidth: 1
           }]
@@ -41,7 +43,19 @@
         options: {
           responsive: true,
           scales: {
-            y: { beginAtZero: true }
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Nº de Focos'
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Data'
+              }
+            }
           }
         }
       });
