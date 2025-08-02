@@ -2,11 +2,15 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Gráfico de Focos por Data</title>
+  <title>Gráfico de Focos no Cerrado - DF</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    canvas { margin-top: 20px; }
+  </style>
 </head>
 <body>
-  <h2>Focos por Data</h2>
+  <h2>Focos de Queimadas no Cerrado - Cidades Satélites do DF (2024)</h2>
   <canvas id="graficoFocos" width="1000" height="500"></canvas>
 
   <script>
@@ -15,45 +19,68 @@
       const dados = await resposta.json();
 
       const contagemPorData = {};
+      const riscoPorData = {};
 
       dados.features.forEach(f => {
-        const dataHora = f.properties.DataHora;
+        const props = f.properties;
+        const dataHora = props.DataHora;
         if (dataHora) {
-          const data = dataHora.split(' ')[0]; // Pega apenas a data (YYYY/MM/DD)
+          const data = dataHora.split(' ')[0];
           contagemPorData[data] = (contagemPorData[data] || 0) + 1;
+
+          // Cálculo de risco de fogo simples baseado na umidade e temperatura
+          const risco = props.umidade < 30 && props.temperatura > 30 ? 'Alto' : 'Moderado';
+          riscoPorData[data] = risco;
         }
       });
 
       const labels = Object.keys(contagemPorData).sort();
       const valores = labels.map(data => contagemPorData[data]);
+      const riscos = labels.map(data => riscoPorData[data]);
 
       const ctx = document.getElementById('graficoFocos').getContext('2d');
       new Chart(ctx, {
         type: 'bar',
         data: {
           labels: labels,
-          datasets: [{
-            label: 'Focos por Data',
-            data: valores,
-            backgroundColor: 'rgba(255, 99, 132, 0.6)',
-            borderColor: 'rgba(255, 99, 132, 1)',
-            borderWidth: 1
-          }]
+          datasets: [
+            {
+              label: 'Nº de Focos',
+              data: valores,
+              backgroundColor: 'rgba(255, 99, 132, 0.6)',
+              borderColor: 'rgba(255, 99, 132, 1)',
+              borderWidth: 1
+            }
+          ]
         },
         options: {
           responsive: true,
+          plugins: {
+            tooltip: {
+              callbacks: {
+                afterLabel: function(context) {
+                  const index = context.dataIndex;
+                  return 'Risco: ' + riscos[index];
+                }
+              }
+            },
+            title: {
+              display: true,
+              text: 'Monitoramento de Focos de Incêndio - Bioma Cerrado (DF)'
+            }
+          },
           scales: {
             y: {
               beginAtZero: true,
               title: {
                 display: true,
-                text: 'Nº de Focos'
+                text: 'Quantidade de Focos'
               }
             },
             x: {
               title: {
                 display: true,
-                text: 'Data'
+                text: 'Data (2024)'
               }
             }
           }

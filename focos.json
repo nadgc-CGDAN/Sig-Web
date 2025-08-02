@@ -7,7 +7,10 @@
         "DataHora": "2024-07-30 12:00:00",
         "diasSemChuva": 10,
         "temperatura": 32,
-        "umidade": 25
+        "umidade": 25,
+        "riscoFogo": "Alto",
+        "bioma": "Cerrado",
+        "cidade": "Ceilândia"
       }
     },
     {
@@ -16,7 +19,34 @@
         "DataHora": "2024-07-31 10:00:00",
         "diasSemChuva": 11,
         "temperatura": 33,
-        "umidade": 20
+        "umidade": 20,
+        "riscoFogo": "Muito Alto",
+        "bioma": "Cerrado",
+        "cidade": "Taguatinga"
+      }
+    },
+    {
+      "properties": {
+        "estado": "DF",
+        "DataHora": "2024-07-25 14:00:00",
+        "diasSemChuva": 15,
+        "temperatura": 34,
+        "umidade": 18,
+        "riscoFogo": "Crítico",
+        "bioma": "Cerrado",
+        "cidade": "Samambaia"
+      }
+    },
+    {
+      "properties": {
+        "estado": "DF",
+        "DataHora": "2024-07-20 16:00:00",
+        "diasSemChuva": 20,
+        "temperatura": 35,
+        "umidade": 15,
+        "riscoFogo": "Extremo",
+        "bioma": "Cerrado",
+        "cidade": "Plano Piloto"
       }
     }
   ]
