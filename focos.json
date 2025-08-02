@@ -1,0 +1,13 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    { "properties": { "estado": "SP" } },
+    { "properties": { "estado": "SP" } },
+    { "properties": { "estado": "MG" } },
+    { "properties": { "estado": "RJ" } },
+    { "properties": { "estado": "RJ" } },
+    { "properties": { "estado": "RJ" } },
+    { "properties": { "estado": "BA" } },
+    { "properties": { "estado": "DF" } }
+  ]
+}
