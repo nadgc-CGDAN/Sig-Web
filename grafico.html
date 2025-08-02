@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Gráfico de Focos</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <h2>Focos por Estado</h2>
+  <canvas id="graficoFocos" width="800" height="400"></canvas>
+
+  <script>
+    async function carregarDados() {
+      const resposta = await fetch('focos.json');
+      const dados = await resposta.json();
+
+      // Agrupar por estado
+      const contagemEstados = {};
+      dados.features.forEach(f => {
+        const estado = f.properties.estado || 'Indefinido';
+        contagemEstados[estado] = (contagemEstados[estado] || 0) + 1;
+      });
+
+      const labels = Object.keys(contagemEstados);
+      const valores = Object.values(contagemEstados);
+
+      // Criar o gráfico
+      const ctx = document.getElementById('graficoFocos').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Número de Focos por Estado',
+            data: valores,
+            backgroundColor: 'rgba(255, 99, 132, 0.5)',
+            borderColor: 'rgba(255, 99, 132, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    carregarDados();
+  </script>
+</body>
+</html>
